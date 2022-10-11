@@ -1,4 +1,14 @@
-from app import index
+from app import app, fakeDatabase
+import pytest
+import json
 
-def test_index():
-    assert index() == "Hello World!"
+@pytest.fixture
+def client():
+    with app.test_client() as client:
+        yield client
+
+
+def test_get_items(client):
+    items = client.get('/')
+    assert json.dumps(fakeDatabase) == json.dumps(items.get_json())
+    
