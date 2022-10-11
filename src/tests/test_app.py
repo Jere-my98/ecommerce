@@ -11,4 +11,3 @@ def client():
 def test_get_items(client):
     items = client.get('/')
     assert json.dumps(fakeDatabase) == json.dumps(items.get_json())
-    
