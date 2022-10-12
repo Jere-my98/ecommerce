@@ -23,12 +23,13 @@ fakeDatabase = {
 
 class Items(Resource):
     def get(self):
-        return fakeDatabase
+        tasks = Task.query.all()
+        return tasks
     
     def post(self):
         data = request.json
-        itemId = len(fakeDatabase.keys()) + 1
-        fakeDatabase[itemId] = {'name':data['name']}
+        item_Id = len(fakeDatabase.keys()) + 1
+        fakeDatabase[item_Id] = {'name':data['name']}
         return fakeDatabase
 
 class Item(Resource):
