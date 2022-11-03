@@ -1,5 +1,5 @@
 from flask import Flask,request
-from flask_restful import Resource, Api
+from flask_restful import Resource, Api, marshal_with, fields
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -21,29 +21,51 @@ fakeDatabase = {
     3:{'name':'Start Stream'}
 }
 
+taskFields = {
+    'id':fields.Integer,
+    'name':fields.String
+}
+
 class Items(Resource):
+    @marshal_with(taskFields)
     def get(self):
         tasks = Task.query.all()
         return tasks
-    
+
+    @marshal_with(taskFields)
     def post(self):
         data = request.json
-        item_Id = len(fakeDatabase.keys()) + 1
-        fakeDatabase[item_Id] = {'name':data['name']}
-        return fakeDatabase
+        task = Task(name = data['name'])
+        db.session.add(task)
+        db.session.commit()
+        tasks = Task.query.all()
+        # item_Id = len(fakeDatabase.keys()) + 1
+        # fakeDatabase[item_Id] = {'name':data['name']}
+        return tasks
 
 class Item(Resource):
+    @marshal_with(taskFields)
     def get(self, pk):
-        return fakeDatabase[pk]
-
+        task = Task.query.filter_by(id = pk).first()
+        return task
+    
+    @marshal_with(taskFields)
     def put(self,pk):
         data = request.json
-        fakeDatabase[pk]['name'] = data['name']
-        return fakeDatabase
-
+        task = Task.query.filter_by(id=pk).first()
+        task.name = data['name']
+        db.session.commit()
+        # fakeDatabase[pk]['name'] = data['name']
+        return task
+        
+    @marshal_with(taskFields)
     def delete(self, pk):
-        del fakeDatabase[pk]
-        return fakeDatabase
+        task = Task.query.filter_by(id=pk).first()
+        db.session.delete(task)
+        db.session.commit()
+        tasks = Task.query.all()
+        # del fakeDatabase[pk]
+        return tasks
 
 api.add_resource(Items,'/')
 api.add_resource(Item,'/<int:pk>')
